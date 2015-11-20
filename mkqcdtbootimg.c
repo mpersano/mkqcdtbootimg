@@ -359,6 +359,7 @@ int usage(void)
             "       [ --ramdisk <filename> ]\n"
             "       [ --second <2ndbootloader-filename> ]\n"
 	    "       [ --dt_dir <dtb path> ]\n"
+	    "       [ --qcdt <filename> ]\n"
             "       [ --cmdline <kernel-commandline> ]\n"
             "       [ --board <boardname> ]\n"
             "       [ --base <address> ]\n"
@@ -408,6 +409,7 @@ int main(int argc, char **argv)
 	void *ramdisk_data = NULL;
 	char *second_fn = NULL;
 	void *second_data = NULL;
+	char *qcdt_fn = NULL;
 	char *dt_dir = NULL;
 	uint32_t dt_version = 0;
 	void *dt_data = NULL;
@@ -447,6 +449,8 @@ int main(int argc, char **argv)
 			ramdisk_fn = val;
 		    } else if(!strcmp(arg, "--second")) {
 			second_fn = val;
+		    } else if(!strcmp(arg, "--qcdt")) {
+			qcdt_fn = val;
 		    } else if (!strcmp(arg, "--dt_dir")) {
 			dt_dir = val;
 		    } else if (!strcmp(arg, "--dt_version")) {
@@ -536,7 +540,13 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (dt_dir) {
+	if (qcdt_fn) {
+		dt_data = load_file(qcdt_fn, &hdr.dt_size);
+		if (dt_data == 0) {
+			fprintf(stderr, "error: could not load qcdt '%s'\n", qcdt_fn);
+			return 1;
+		}
+	} else if (dt_dir) {
 		dt_data = load_dtqc_block(dt_dir, pagesize, &hdr.dt_size, dt_version);
 		if (dt_data == 0) {
 			fprintf(stderr, "error: could not load device tree blobs '%s'\n", dt_dir);
